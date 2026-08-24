@@ -1,0 +1,8 @@
+{
+  "name": "TAMAM Shop | تمام شوب",
+  "description": "متجر إلكتروني عراقي متكامل لمنتجات الأفليت المباشرة من Rolemall مع نظام الطلب السريع والتتبع المتقدم",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
