@@ -164,24 +164,19 @@ export const FunnelLandingPage: React.FC<FunnelLandingPageProps> = ({
       {/* Balanced, Clean & Concise Funnel Footer */}
       <footer id="funnel-footer" className="bg-gray-50/90 border-t border-gray-200/80 pt-8 pb-28 md:pb-10 mt-12 text-gray-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          {/* Top Row: Brand & Quick Trust Badges in a balanced layout */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 pb-5 border-b border-gray-200/70">
-            {/* Brand */}
+          {/* Top Row: Brand & Quick Trust Badges in a centered, balanced layout */}
+          <div className="flex flex-col items-center justify-center gap-5 pb-5 border-b border-gray-200/70 text-center">
+            {/* Brand (English Only, Centered & Stylized) */}
             <button
               type="button"
               onClick={onBackToHome}
-              className="inline-flex items-center gap-2 cursor-pointer group focus:outline-none transition-transform active:scale-95"
-              title="العودة للرئيسية"
+              className="inline-flex flex-col items-center justify-center cursor-pointer group focus:outline-none transition-all active:scale-98 text-center"
+              title="TAMAM SHOP - العودة للرئيسية"
             >
-              <div className="w-8 h-8 rounded-xl bg-[#22A39E] text-white flex items-center justify-center font-black text-sm shadow-2xs group-hover:bg-[#1b8581] transition-colors">
-                <ShoppingBag className="w-4 h-4" />
-              </div>
-              <div className="text-right">
-                <span className="font-extrabold text-base text-gray-900 group-hover:text-[#22A39E] transition-colors block leading-tight">
-                  تمام شوب — TAMAM Shop
-                </span>
-                <span className="text-[11px] text-gray-400 font-medium block">تسوق موثوق ومباشر في العراق 🇮🇶</span>
-              </div>
+              <span className="font-black text-2xl sm:text-3xl tracking-[0.18em] text-gray-900 group-hover:text-[#22A39E] transition-colors uppercase font-sans">
+                TAMAM <span className="text-[#22A39E]">SHOP</span>
+              </span>
+              <span className="text-[11px] text-gray-400 font-medium mt-1">تسوق موثوق ومباشر في العراق 🇮🇶</span>
             </button>
 
             {/* Concise Trust Badges */}
@@ -238,7 +233,7 @@ export const FunnelLandingPage: React.FC<FunnelLandingPageProps> = ({
 
           {/* Bottom Copyright & Guarantee note */}
           <div className="pt-3 border-t border-gray-200/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-gray-400 text-center sm:text-right">
-            <p>جميع الحقوق محفوظة © {new Date().getFullYear()} <span className="text-gray-600 font-semibold">برايم</span></p>
+            <p>جميع الحقوق محفوظة © {new Date().getFullYear()} <span className="text-gray-600 font-semibold">تمام شوب</span></p>
             <p className="flex items-center justify-center gap-1.5 text-gray-500 font-medium">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
               <span>تسوق آمن ومباشر 100% في العراق</span>

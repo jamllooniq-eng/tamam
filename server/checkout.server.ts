@@ -181,7 +181,7 @@ export async function processOrder(
   const unitPrice = Math.max(0, Number(payload.unit_price || 0));
   const expectedTotal = unitPrice * count;
   const itemId = String(payload.item_id || '').trim();
-  const productName = String(payload.product_name || 'منتج برايم').trim();
+  const productName = String(payload.product_name || 'منتج تمام شوب').trim();
   const notes = String(payload.note || '').trim();
 
   // 2. Duplicate Check within 5 minutes
@@ -237,7 +237,7 @@ export async function processOrder(
     };
 
     // Telegram formatted Markdown
-    const telegramMsg = `📦 *طلب جديد من متجر برايم*
+    const telegramMsg = `📦 *طلب جديد من متجر تمام شوب*
 ━━━━━━━━━━━━━━━━━
 🔢 *رقم الطلب:* \`${orderId}\`
 🛍️ *المنتج:* ${productName} (معرف: \`${itemId}\`)
@@ -251,7 +251,7 @@ export async function processOrder(
 📝 *الملاحظات:* ${notes || 'لا توجد'}
 ⏰ *الوقت (بغداد):* ${baghdadTime}`;
 
-    const productPageUrl = `${(process.env.APP_URL || 'https://primeiq.iq').replace(/\/+$/, '')}/product/${itemId}`;
+    const productPageUrl = `${(process.env.APP_URL || 'https://tamam-iq.com').replace(/\/+$/, '')}/product/${itemId}`;
 
     const [sheetsSuccess, telegramSuccess] = await Promise.all([
       sendToGoogleSheetsWithRetry(sheetData),

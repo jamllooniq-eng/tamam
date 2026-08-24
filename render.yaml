@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: prime-iq
+    name: tamam-shop
     env: node
     plan: starter
     buildCommand: npm run build

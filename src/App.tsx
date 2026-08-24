@@ -167,12 +167,12 @@ export const App: React.FC<AppProps> = ({ ssrRoute, ssrData, HomeViewSync }) => 
         setSelectedProduct(null);
         setIsUnavailable(false);
         setNotFoundState({ active: true, type: 'page' });
-        updatePageSEO('الصفحة غير موجودة | برايم');
+        updatePageSEO('الصفحة غير موجودة | تمام شوب');
       } else if (parsed.view === 'unavailable') {
         setSelectedProduct(null);
         setNotFoundState({ active: false, type: 'page' });
         setIsUnavailable(true);
-        updatePageSEO('تعذّر تحميل المنتج مؤقتاً | برايم');
+        updatePageSEO('تعذّر تحميل المنتج مؤقتاً | تمام شوب');
       } else {
         setSelectedProduct(null);
         setNotFoundState({ active: false, type: 'page' });
@@ -229,7 +229,7 @@ export const App: React.FC<AppProps> = ({ ssrRoute, ssrData, HomeViewSync }) => 
         setSelectedProduct(null);
         setIsUnavailable(false);
         setNotFoundState({ active: true, type: 'product' });
-        updatePageSEO('المنتج غير موجود | برايم');
+        updatePageSEO('المنتج غير موجود | تمام شوب');
         return;
       }
 
@@ -237,13 +237,13 @@ export const App: React.FC<AppProps> = ({ ssrRoute, ssrData, HomeViewSync }) => 
       setSelectedProduct(null);
       setNotFoundState({ active: false, type: 'product' });
       setIsUnavailable(true);
-      updatePageSEO('تعذّر تحميل المنتج مؤقتاً | برايم');
+      updatePageSEO('تعذّر تحميل المنتج مؤقتاً | تمام شوب');
     } catch (err) {
       console.error('Failed to fetch product details:', err);
       setSelectedProduct(null);
       setNotFoundState({ active: false, type: 'product' });
       setIsUnavailable(true);
-      updatePageSEO('تعذّر تحميل المنتج مؤقتاً | برايم');
+      updatePageSEO('تعذّر تحميل المنتج مؤقتاً | تمام شوب');
     } finally {
       setLoadingProductDetails(false);
     }
@@ -292,7 +292,7 @@ export const App: React.FC<AppProps> = ({ ssrRoute, ssrData, HomeViewSync }) => 
     if (typeof window !== 'undefined') {
       window.history.pushState(null, '', '/');
     }
-    updatePageSEO('برايم | PRIME IQ - متجر إلكتروني للأجهزة والمنتجات الحديثة');
+    updatePageSEO('تمام شوب | TAMAM SHOP - متجر إلكتروني للأجهزة والمنتجات الحديثة');
   };
 
   const handleSearchChange = (q: string) => {

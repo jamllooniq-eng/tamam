@@ -57,7 +57,7 @@ export const handler: Handler = async (event) => {
     // 1. Prepare Google Sheets Data
     const sheetData = {
       orderId,
-      productName: productName || 'منتج برايم',
+      productName: productName || 'منتج تمام شوب',
       name,
       phone,
       governorate,
@@ -70,10 +70,10 @@ export const handler: Handler = async (event) => {
     };
 
     // 2. Prepare Telegram Message
-    const telegramMsg = `📦 *طلب جديد من متجر برايم*
+    const telegramMsg = `📦 *طلب جديد من متجر تمام شوب*
 ━━━━━━━━━━━━━━━━━
 🔢 *رقم الطلب:* \`${orderId}\`
-🛍️ *المنتج:* ${productName || 'منتج برايم'} (معرف: \`${itemId}\`)
+🛍️ *المنتج:* ${productName || 'منتج تمام شوب'} (معرف: \`${itemId}\`)
 👤 *العميل:* ${name}
 📞 *الهاتف:* \`${phone}\`
 📍 *المحافظة:* ${governorate}
@@ -84,7 +84,7 @@ export const handler: Handler = async (event) => {
 📝 *الملاحظات:* ${notes || 'لا توجد'}
 ⏰ *الوقت (بغداد):* ${formattedTime}`;
 
-    const productPageUrl = `${(process.env.APP_URL || 'https://primeiq.iq').replace(/\/+$/, '')}/product/${itemId}`;
+    const productPageUrl = `${(process.env.APP_URL || 'https://tamam-iq.com').replace(/\/+$/, '')}/product/${itemId}`;
 
     // 3. Execute all external delivery destinations in parallel
     const [sheetsSuccess, telegramSuccess, capiSuccess] = await Promise.all([
@@ -94,7 +94,7 @@ export const handler: Handler = async (event) => {
         eventName: 'Purchase',
         eventId: orderId,
         orderId,
-        productName: productName || 'منتج برايم',
+        productName: productName || 'منتج تمام شوب',
         productId: itemId,
         totalPriceIqd: totalPrice || 0,
         count: quantity || 1,

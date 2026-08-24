@@ -158,7 +158,7 @@ export async function sendMetaCapiPurchase(params: SendCapiEventParams): Promise
           event_time: Math.floor(Date.now() / 1000),
           event_id: eventId,
           action_source: 'website',
-          event_source_url: params.sourceUrl || process.env.APP_URL || 'https://primeiq.iq',
+          event_source_url: params.sourceUrl || process.env.APP_URL || 'https://tamam-iq.com',
           user_data: userData,
           custom_data: customData,
         },

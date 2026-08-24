@@ -1,7 +1,7 @@
 import type { Handler } from '@netlify/functions';
 
 export const handler: Handler = async () => {
-  const baseUrl = process.env.APP_URL || 'https://primeiq.iq';
+  const baseUrl = process.env.APP_URL || 'https://tamam-iq.com';
   const robotsText = `User-agent: *
 Allow: /
 Disallow: /api/

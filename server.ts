@@ -1,5 +1,5 @@
 /**
- * PRIME IQ Server Entry Point
+ * TAMAM SHOP Server Entry Point
  * Full-stack Express + Vite SSR with Server-Side Rolemall Adapter,
  * Secure Image Proxy, Direct Checkout, Meta CAPI, and Dynamic SEO
  */
@@ -26,7 +26,7 @@ async function startServer() {
 
   // Health Check
   app.get('/api/health', (_req: Request, res: Response) => {
-    res.json({ status: 'ok', store: 'PRIME IQ (برايم)' });
+    res.json({ status: 'ok', store: 'TAMAM SHOP (تمام شوب)' });
   });
 
   // Local / Express Proxy for Netlify Image CDN (/.netlify/images) in Development & Self-hosted environments
@@ -55,7 +55,7 @@ async function startServer() {
       const imgRes = await fetch(imageUrl, {
         signal: controller.signal,
         headers: {
-          'User-Agent': 'PrimeIQ/1.0',
+          'User-Agent': 'TamamShop/1.0',
         },
       });
       clearTimeout(timeout);
@@ -163,7 +163,7 @@ async function startServer() {
   // Dynamic Sitemap
   app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     try {
-      const baseUrl = process.env.APP_URL || 'https://primeiq.iq';
+      const baseUrl = process.env.APP_URL || 'https://tamam-iq.com';
       const [categories, productsData] = await Promise.all([
         getCategories(),
         getProducts({ limit: 100 }),
@@ -211,7 +211,7 @@ async function startServer() {
 
   // Robots.txt
   app.get('/robots.txt', (_req: Request, res: Response) => {
-    const baseUrl = process.env.APP_URL || 'https://primeiq.iq';
+    const baseUrl = process.env.APP_URL || 'https://tamam-iq.com';
     const robots = `User-agent: *
 Allow: /
 Disallow: /api/
@@ -306,7 +306,7 @@ Sitemap: ${baseUrl}/sitemap.xml
   });
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[PRIME IQ] Server running on http://0.0.0.0:${PORT} (${isProd ? 'Production SSR' : 'Development SSR'})`);
+    console.log(`[TAMAM SHOP] Server running on http://0.0.0.0:${PORT} (${isProd ? 'Production SSR' : 'Development SSR'})`);
     
     // Background warmup for instant fast response
     setTimeout(() => {

@@ -98,6 +98,16 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
   const handleTouchMove = (e: React.TouchEvent) => {
     currentX.current = e.touches[0].clientX;
     currentY.current = e.touches[0].clientY;
+
+    const diffX = Math.abs(currentX.current - startX.current);
+    const diffY = Math.abs(currentY.current - startY.current);
+
+    // If movement is clearly horizontal, prevent browser default back/forward gesture
+    if (diffX > 10 && diffX > diffY * 1.2) {
+      if (e.cancelable) {
+        e.preventDefault();
+      }
+    }
   };
 
   const handleTouchEnd = () => {
@@ -143,6 +153,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
       {/* 1. Square 1:1 Image Box */}
       <div
         className="relative w-full aspect-square bg-gray-100 rounded-[18px] border border-[#E5E5E5] shadow-xs overflow-hidden cursor-grab active:cursor-grabbing touch-pan-y"
+        style={{ touchAction: 'pan-y' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

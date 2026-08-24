@@ -45,7 +45,7 @@ export const OrderSummary: React.FC<OrderSummaryProps> = ({
               }}
             />
           ) : (
-            <div className="text-[10px] text-gray-400">برايم</div>
+            <div className="text-[10px] text-gray-400">تمام شوب</div>
           )}
         </div>
 

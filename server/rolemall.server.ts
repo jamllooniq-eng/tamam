@@ -255,7 +255,7 @@ async function resilientFetch(url: string, maxRetries = 2): Promise<Response> {
         signal: controller.signal,
         headers: {
           'Accept': 'application/json',
-          'User-Agent': 'PrimeIQ/1.0',
+          'User-Agent': 'TamamShop/1.0',
         },
       });
       clearTimeout(timeout);

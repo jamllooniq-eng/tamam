@@ -3,7 +3,7 @@ import { getCategories, getProducts } from '../../server/rolemall.server';
 
 export const handler: Handler = async () => {
   try {
-    const baseUrl = process.env.APP_URL || 'https://primeiq.iq';
+    const baseUrl = process.env.APP_URL || 'https://tamam-iq.com';
     const [categories, productsData] = await Promise.all([
       getCategories(),
       getProducts({ limit: 100 }),

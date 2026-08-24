@@ -43,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect, pri
         ) : (
           <div className="flex flex-col items-center justify-center text-gray-400">
             <ShoppingBag className="w-10 h-10 mb-2 opacity-50" />
-            <span className="text-xs">برايم</span>
+            <span className="text-xs">تمام شوب</span>
           </div>
         )}
 

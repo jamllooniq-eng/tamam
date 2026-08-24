@@ -156,7 +156,7 @@ export async function render(url: string, baseUrl?: string): Promise<RenderResul
     category: selectedCategoryObj,
     categoryName: selectedCategoryObj?.name,
     search: parsed.search,
-    baseUrl: baseUrl || process.env.APP_URL || 'https://primeiq.iq',
+    baseUrl: baseUrl || process.env.APP_URL || 'https://tamam-iq.com',
     currentUrl: url,
   });
 
