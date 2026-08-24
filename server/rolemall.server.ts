@@ -641,16 +641,28 @@ async function fetchProductDetailsDirect(pId: string): Promise<ProductDetailsRes
     let isExplicitlyNotFound = false;
 
     try {
-      // NOTE: NO trailing slash to avoid 307 redirect
-      const url = `${BASE_URL}/products?token=${SUPPLIER_API_TOKEN}&id=${encodeURIComponent(pId)}`;
+      // NOTE: Rolemall's dedicated single-product endpoint. Confirmed correct by
+      // cross-checking against a reference project using the same API token,
+      // which fetches products reliably via this exact URL pattern (unlike the
+      // old /products?id= approach, which Rolemall does not actually filter by).
+      const url = `${BASE_URL}/product-details?strung=${SUPPLIER_API_TOKEN}gootquality${encodeURIComponent(pId)}`;
       const res = await resilientFetch(url, 2);
 
       if (res.ok) {
         const json = await res.json();
-        const dataObj = json.data || json;
-        const productsList = Array.isArray(dataObj.products) ? dataObj.products : (Array.isArray(dataObj) ? dataObj : []);
-        
-        const rawProduct = productsList.find((p: any) => String(p._id || p.id) === pId);
+        let rawProduct: any = null;
+
+        if (json.data && json.data.product) {
+          rawProduct = json.data.product;
+        } else if (json.data && !Array.isArray(json.data)) {
+          rawProduct = json.data;
+        } else if (json.product) {
+          rawProduct = json.product;
+        } else if (json && !Array.isArray(json) && (json._id || json.id)) {
+          // Response might be the raw product object directly at the root
+          rawProduct = json;
+        }
+
         if (rawProduct) {
           const normalized = normalizeProduct(rawProduct, memoryCache.categoryMap);
           if (normalized) {
@@ -662,10 +674,9 @@ async function fetchProductDetailsDirect(pId: string): Promise<ProductDetailsRes
             setDiskCache(`product_${pId}`, entry);
             return { product: normalized, status: 'found' };
           }
-        } else {
-          // The API returned HTTP 200 with catalog response, but product is not found in the list
-          isExplicitlyNotFound = true;
         }
+        // Got a valid 200 response but couldn't extract a usable product from it
+        isExplicitlyNotFound = true;
       } else if (res.status === 404) {
         isExplicitlyNotFound = true;
       }
