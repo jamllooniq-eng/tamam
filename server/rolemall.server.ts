@@ -673,6 +673,55 @@ async function fetchProductDetailsDirect(pId: string): Promise<ProductDetailsRes
       console.warn(`Notice: Details fetch issue for product ${pId}:`, err?.message || err);
     }
 
+    // Rescue: Rolemall's id= filter is unreliable — it often ignores the id parameter
+    // and returns its default first-page batch instead of the specific product.
+    // So if the direct id-based query failed to find the product, search through
+    // the full catalog page by page as a real fallback (not just memory cache).
+    let rescueFound: RolemallProduct | null = null;
+    const RESCUE_PAGE_LIMIT = 100;
+    const RESCUE_MAX_PAGES = 15; // covers up to 1500 products
+
+    if (isExplicitlyNotFound) {
+      for (let rescuePage = 1; rescuePage <= RESCUE_MAX_PAGES && !rescueFound; rescuePage++) {
+        try {
+          const rescueParams = new URLSearchParams();
+          rescueParams.set('token', SUPPLIER_API_TOKEN);
+          rescueParams.set('limit', String(RESCUE_PAGE_LIMIT));
+          rescueParams.set('page', String(rescuePage));
+
+          const rescueUrl = `${BASE_URL}/products?${rescueParams.toString()}`;
+          const rescueRes = await resilientFetch(rescueUrl, 1);
+          if (!rescueRes.ok) break;
+
+          const rescueJson = await rescueRes.json();
+          const rescueDataObj = rescueJson.data || rescueJson;
+          const rescueList = Array.isArray(rescueDataObj.products) ? rescueDataObj.products : (Array.isArray(rescueDataObj) ? rescueDataObj : []);
+
+          if (rescueList.length === 0) break;
+
+          const rescueRaw = rescueList.find((p: any) => String(p._id || p.id) === pId);
+          if (rescueRaw) {
+            const normalizedRescue = normalizeProduct(rescueRaw, memoryCache.categoryMap);
+            if (normalizedRescue) {
+              rescueFound = normalizedRescue;
+            }
+          }
+
+          if (rescueList.length < RESCUE_PAGE_LIMIT) break;
+        } catch (rescuePageErr: any) {
+          console.warn(`Notice: Rescue page ${rescuePage} fetch failed for product ${pId}:`, rescuePageErr?.message || rescuePageErr);
+          break;
+        }
+      }
+    }
+
+    if (rescueFound) {
+      const entry = { data: rescueFound, timestamp: Date.now() };
+      memoryCache.productDetails.set(pId, entry);
+      setDiskCache(`product_${pId}`, entry);
+      return { product: rescueFound, status: 'found' };
+    }
+
     // Fallback: search across all cached product lists in memory or disk
     for (const entry of memoryCache.products.values()) {
       const found = entry.data.products.find(p => String(p.id) === pId);
