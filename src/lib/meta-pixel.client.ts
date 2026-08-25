@@ -174,6 +174,47 @@ export function trackMetaEvent(
   }
 }
 
+/**
+ * Fire-and-forget dispatch to our server-side /track endpoint, giving ViewContent
+ * and InitiateCheckout server-side CAPI coverage (resilient to browser ad-blockers),
+ * matching the same reliability level Purchase already has via sendMetaCapiPurchase.
+ * No customer identity (name/phone) is available yet at this stage — only browser-level
+ * signals (fbc, fbp, IP, User-Agent), which is expected and correct for these early events.
+ */
+function sendServerCapiEarlyEvent(
+  eventName: 'ViewContent' | 'InitiateCheckout',
+  productId: string | number,
+  productName: string,
+  priceIqd: number,
+  count: number
+): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const { fbp, fbc } = getMetaCookies();
+    const eventId = `evt_${eventName}_${productId}_${Date.now()}`;
+    fetch('/.netlify/functions/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventName,
+        eventId,
+        productId,
+        productName,
+        priceIqd,
+        count,
+        sourceUrl: window.location.href,
+        fbc,
+        fbp,
+      }),
+      keepalive: true,
+    }).catch(() => {
+      // Silent fail — this is a best-effort tracking call, never block the user
+    });
+  } catch {
+    // Ignore
+  }
+}
+
 export function trackViewContent(product: {
   id: string | number;
   title: string;
@@ -188,6 +229,8 @@ export function trackViewContent(product: {
     value: usdValue,
     currency: 'USD',
   });
+
+  sendServerCapiEarlyEvent('ViewContent', product.id, product.title, product.price, 1);
 }
 
 export function trackAddToCart(product: {
@@ -224,6 +267,8 @@ export function trackInitiateCheckout(product: {
     currency: 'USD',
     num_items: product.count,
   });
+
+  sendServerCapiEarlyEvent('InitiateCheckout', product.id, product.title, product.price, product.count);
 }
 
 /**
