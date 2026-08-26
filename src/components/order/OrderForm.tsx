@@ -4,7 +4,7 @@ import { IRAQ_GOVERNORATES } from '../../lib/governorates';
 import { normalizeDigits, normalizeIraqiPhone } from '../../lib/phone';
 import { QuantitySelector } from './QuantitySelector';
 import { trackInitiateCheckout, trackPurchase, getMetaCookies } from '../../lib/meta-pixel.client';
-import { User, Phone, MapPin, AlertCircle, Loader2, Send, Truck, ChevronDown, ShieldCheck, Sparkles } from 'lucide-react';
+import { User, Phone, MapPin, AlertCircle, Loader2, Send, Truck, ChevronDown, ShieldCheck } from 'lucide-react';
 
 interface OrderFormProps {
   product: RolemallProduct;
@@ -161,24 +161,15 @@ export const OrderForm: React.FC<OrderFormProps> = ({
       {/* Accent Top Gradient Header Bar */}
       <div className="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-[#22A39E] via-[#2ec4be] to-[#22A39E]"></div>
 
-      {/* Header section inside card */}
-      <div className="mb-3.5 pb-3 sm:mb-4 sm:pb-3.5 border-b border-gray-100 text-center min-w-0 flex flex-col items-center">
-        {/* Prominent Glowing Title Bar */}
-        <div className="relative inline-flex items-center justify-center gap-2.5 sm:gap-3 px-5 sm:px-7 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#22A39E] to-[#178581] text-white shadow-md shadow-[#22A39E]/25 mb-2.5 sm:mb-3 max-w-full overflow-hidden border border-[#2ec4be]/40">
-          {/* Subtle Ambient Light Shimmer */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]"></div>
-          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 shrink-0 relative z-1" />
-          <h3 className="text-base sm:text-lg md:text-xl font-black text-white leading-tight break-words tracking-tight relative z-1">
-            املأ بياناتك أدناه لتأكيد الطلب
+      {/* Header section inside card — side accent bar + two-tone heading (agreed final design) */}
+      <div className="mb-4 sm:mb-5 text-right min-w-0">
+        <div className="flex items-center justify-start gap-3">
+          <span className="h-7 w-1 shrink-0 rounded-full bg-[#22A39E]" />
+          <h3 className="text-base sm:text-lg font-extrabold leading-tight tracking-tight text-[#172033]">
+            يرجى إدخال <span className="text-[#22A39E]">معلوماتك</span> لإكمال الطلب
           </h3>
-          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-amber-300 shrink-0 relative z-1" />
         </div>
-
-        {/* Soft Text Line Without Background */}
-        <div className="flex items-center justify-center gap-1.5 text-xs sm:text-sm text-gray-600 font-bold whitespace-nowrap max-w-full">
-          <span>التوصيل خلال <strong className="text-[#1B8581] font-black">أقل من 48 ساعة</strong>،</span>
-          <span>فحص قبل الاستلام</span>
-        </div>
+        <div className="mt-3 h-px w-full bg-gradient-to-l from-gray-100 via-gray-100 to-transparent" />
       </div>
 
       {/* Quantity Selector & Order Total Price Rows (Quantity first, Total underneath) */}
