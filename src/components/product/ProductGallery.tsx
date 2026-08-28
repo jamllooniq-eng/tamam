@@ -1,4 +1,5 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
 import { ShoppingBag } from 'lucide-react';
 import { getOptimizedImageUrl } from '../../lib/image';
 
@@ -15,188 +16,73 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
 }) => {
   // Deduplicate and filter non-empty images
   const allImages = Array.from(new Set([mainImage, ...images].filter(Boolean)));
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [imageLoading, setImageLoading] = useState(true);
-
-  // Swipe tracking for mobile touch & desktop drag
-  const startX = useRef<number>(0);
-  const startY = useRef<number>(0);
-  const currentX = useRef<number>(0);
-  const currentY = useRef<number>(0);
-  const isDragging = useRef<boolean>(false);
-
   const total = allImages.length;
-  const activeImage = allImages[selectedIndex] || mainImage || '';
-  const proxiedActiveImage = activeImage
-    ? getOptimizedImageUrl(activeImage, { width: 800, quality: 80, fit: 'contain' })
-    : '';
 
-  // Silent background preload of adjacent images (next and previous) to eliminate flash of loading
+  // Embla configured with direction: 'rtl' only — matches the site's Arabic
+  // layout so drag/swipe direction feels natural. No extra options beyond what's
+  // needed, to keep this as simple and low-risk as possible.
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    direction: 'rtl',
+    loop: false,
+  });
+
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // All images use the same reduced quality (72 instead of 80) — a real,
+  // measurable reduction in file size with no visible difference on a phone
+  // screen. Every image loads normally; no selective eager/lazy logic, which
+  // is what caused the smoothness regressions in earlier, more complex attempts.
+  const proxiedUrls = allImages.map((img) =>
+    getOptimizedImageUrl(img, { width: 800, quality: 72, fit: 'contain' })
+  );
+
+  // Keep React state in sync with Embla's own selected slide
   useEffect(() => {
-    if (typeof window === 'undefined' || total <= 1) return;
+    if (!emblaApi) return;
+    const onSelect = () => setSelectedIndex(emblaApi.selectedScrollSnap());
+    emblaApi.on('select', onSelect);
+    onSelect();
+    return () => {
+      emblaApi.off('select', onSelect);
+    };
+  }, [emblaApi]);
 
-    const nextIndex = selectedIndex < total - 1 ? selectedIndex + 1 : -1;
-    const prevIndex = selectedIndex > 0 ? selectedIndex - 1 : -1;
-
-    const indicesToPreload = [nextIndex, prevIndex].filter((i) => i >= 0);
-    indicesToPreload.forEach((idx) => {
-      if (idx !== selectedIndex && allImages[idx]) {
-        const preloadImg = new Image();
-        preloadImg.src = getOptimizedImageUrl(allImages[idx], {
-          width: 800,
-          quality: 80,
-          fit: 'contain',
-        });
-      }
-    });
-  }, [selectedIndex, total, allImages]);
-
-  // Navigate functions - Strictly sequential from first (0) to last (total - 1)
-  const handlePrev = useCallback(() => {
-    setSelectedIndex((prev) => {
-      if (prev > 0) {
-        setImageLoading(true);
-        return prev - 1;
-      }
-      return prev;
-    });
-  }, []);
-
-  const handleNext = useCallback(() => {
-    setSelectedIndex((prev) => {
-      if (prev < total - 1) {
-        setImageLoading(true);
-        return prev + 1;
-      }
-      return prev;
-    });
-  }, [total]);
-
-  // Process horizontal swipe gesture
-  const processSwipe = (deltaX: number, deltaY: number) => {
-    if (total <= 1) return;
-    // Check if horizontal swipe exceeds 30px and is predominantly horizontal
-    if (Math.abs(deltaX) > 30 && Math.abs(deltaX) > Math.abs(deltaY) * 1.1) {
-      if (deltaX > 0) {
-        // Swiped from Left to Right -> Advance to next image
-        handleNext();
-      } else {
-        // Swiped from Right to Left -> Go back to previous image
-        handlePrev();
-      }
-    }
-  };
-
-  // Touch Handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    startX.current = e.touches[0].clientX;
-    startY.current = e.touches[0].clientY;
-    currentX.current = e.touches[0].clientX;
-    currentY.current = e.touches[0].clientY;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    currentX.current = e.touches[0].clientX;
-    currentY.current = e.touches[0].clientY;
-
-    const diffX = Math.abs(currentX.current - startX.current);
-    const diffY = Math.abs(currentY.current - startY.current);
-
-    // If movement is clearly horizontal, prevent browser default back/forward gesture
-    if (diffX > 10 && diffX > diffY * 1.2) {
-      if (e.cancelable) {
-        e.preventDefault();
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    const deltaX = currentX.current - startX.current;
-    const deltaY = currentY.current - startY.current;
-    processSwipe(deltaX, deltaY);
-  };
-
-  // Mouse Drag Handlers for Desktop swipe
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDragging.current = true;
-    startX.current = e.clientX;
-    startY.current = e.clientY;
-    currentX.current = e.clientX;
-    currentY.current = e.clientY;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    currentX.current = e.clientX;
-    currentY.current = e.clientY;
-  };
-
-  const handleMouseUp = () => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    const deltaX = currentX.current - startX.current;
-    const deltaY = currentY.current - startY.current;
-    processSwipe(deltaX, deltaY);
-  };
-
-  const handleMouseLeave = () => {
-    if (isDragging.current) {
-      isDragging.current = false;
-      const deltaX = currentX.current - startX.current;
-      const deltaY = currentY.current - startY.current;
-      processSwipe(deltaX, deltaY);
-    }
-  };
+  const goToIndex = useCallback(
+    (idx: number) => {
+      emblaApi?.scrollTo(idx);
+    },
+    [emblaApi]
+  );
 
   return (
     <div id="product-gallery" className="w-full max-w-[480px] mx-auto select-none">
-      {/* 1. Square 1:1 Image Box */}
-      <div
-        className="relative w-full aspect-square bg-gray-100 rounded-[18px] border border-[#E5E5E5] shadow-xs overflow-hidden cursor-grab active:cursor-grabbing touch-pan-y"
-        style={{ touchAction: 'pan-y' }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-      >
-        {/* Skeleton loading indicator behind the image */}
-        {imageLoading && proxiedActiveImage && (
-          <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-0 pointer-events-none">
-            <ShoppingBag className="w-10 h-10 text-gray-300 animate-pulse" />
+      {/* 1. Square 1:1 Image Box — Embla-powered sliding track */}
+      <div className="relative w-full aspect-square bg-gray-100 rounded-[18px] border border-[#E5E5E5] shadow-xs overflow-hidden">
+        {allImages.length > 0 ? (
+          <div className="overflow-hidden h-full" ref={emblaRef} style={{ touchAction: 'pan-y' }}>
+            <div className="flex h-full">
+              {allImages.map((img, idx) => (
+                <div key={img + idx} className="relative h-full shrink-0 grow-0 basis-full">
+                  <img
+                    src={proxiedUrls[idx]}
+                    alt={`${title} - صورة ${idx + 1}`}
+                    fetchPriority={idx === 0 ? 'high' : 'auto'}
+                    loading="eager"
+                    referrerPolicy="no-referrer"
+                    decoding="async"
+                    draggable={false}
+                    className="w-full h-full object-cover object-center"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      if (img && target.src !== img) {
+                        target.src = img;
+                      }
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
-        )}
-
-        {/* Product Image Stage - Edge to Edge cover with center focus and smooth fade-in */}
-        {proxiedActiveImage ? (
-          <img
-            key={proxiedActiveImage}
-            ref={(node) => {
-              if (node && node.complete && node.naturalWidth > 0) {
-                setImageLoading(false);
-              }
-            }}
-            src={proxiedActiveImage}
-            alt={`${title} - صورة ${selectedIndex + 1}`}
-            fetchPriority="high"
-            loading="eager"
-            referrerPolicy="no-referrer"
-            decoding="async"
-            draggable={false}
-            className={`relative z-1 w-full h-full object-cover object-center transition-opacity duration-300 ${
-              imageLoading ? 'opacity-0' : 'opacity-100'
-            }`}
-            onLoad={() => setImageLoading(false)}
-            onError={(e) => {
-              setImageLoading(false);
-              const target = e.currentTarget;
-              if (activeImage && target.src !== activeImage) {
-                target.src = activeImage;
-              }
-            }}
-          />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50">
             <ShoppingBag className="w-16 h-16 mb-2 opacity-30" />
@@ -222,10 +108,7 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
                   aria-label={`عرض الصورة ${idx + 1} من ${total}`}
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (idx !== selectedIndex) {
-                      setSelectedIndex(idx);
-                      setImageLoading(true);
-                    }
+                    goToIndex(idx);
                   }}
                   className={`transition-all duration-300 cursor-pointer rounded-full p-0 border-none outline-none shadow-sm ${
                     isActive
@@ -241,4 +124,3 @@ export const ProductGallery: React.FC<ProductGalleryProps> = ({
     </div>
   );
 };
-
