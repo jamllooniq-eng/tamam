@@ -47,6 +47,10 @@ export const FunnelLandingPage: React.FC<FunnelLandingPageProps> = ({
   onOrderSuccess,
   onOpenPolicy,
 }) => {
+  // NOTE: OrderForm renders exactly ONCE in the DOM (single instance,
+  // repositioned via CSS Grid `order` between mobile and desktop), so its
+  // internal id="order-form-card" is never duplicated. A plain
+  // getElementById lookup is sufficient and reliable.
   const scrollToOrder = () => {
     const formElement = document.getElementById('order-form-card') || document.getElementById('order-form-container');
     if (formElement) {
@@ -70,13 +74,32 @@ export const FunnelLandingPage: React.FC<FunnelLandingPageProps> = ({
       {/* Main Funnel Landing Content */}
       <main className="flex-1 min-w-0">
         <div className="max-w-4xl lg:max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-6 sm:pt-5 sm:pb-8 space-y-6 sm:space-y-8 min-w-0">
-          
-          {/* Two-Column Section on Desktop (lg:), Sequential on Mobile/Tablet */}
-          <div className="flex flex-col lg:grid lg:grid-cols-12 lg:gap-8 lg:items-start min-w-0">
-            
-            {/* Column 1 (Gallery, Price Banner, & Product Details Box) */}
-            <div className="lg:col-span-7 space-y-2 sm:space-y-2.5 min-w-0">
-              {/* Prominent, Premium & Eye-Catching Price & Delivery Banner */}
+
+          {/* Unified Responsive Grid — single source of truth for both Mobile
+              and Desktop layouts.
+
+              DELIBERATE DESIGN CHOICE: the grid has only TWO real top-level
+              items in its first "row" (the main content block and the
+              OrderForm), not five separate items each with their own
+              row-start/row-end. Grouping price + gallery + details back
+              into ONE wrapper (exactly like the original, pre-merge
+              design) means that single wrapper's height is driven purely
+              by its own content, completely independent of the form.
+              With only two siblings sharing one implicit row and
+              `items-start` (no stretch), the row's height is simply
+              `max(main content height, form height)` — no explicit
+              row-span/row-end arithmetic needed at all, and no risk of
+              one item's height inflating a row that pushes the other
+              item down. This is the standard, lowest-risk CSS Grid
+              pattern for a "main column + sticky sidebar" layout. */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-2.5 lg:gap-8 lg:items-start min-w-0">
+
+            {/* MAIN COLUMN — price banner, gallery, and details box, stacked
+                in normal document flow (not as separate grid items). Same
+                internal order and spacing on both Mobile and Desktop. */}
+            <div className="order-1 lg:order-1 lg:col-span-7 space-y-2 sm:space-y-2.5 min-w-0">
+
+              {/* Price & Delivery Banner */}
               <div className="rounded-2xl bg-gradient-to-l from-[#22A39E]/[0.07] via-white to-[#22A39E]/[0.07] border-2 border-[#22A39E]/30 p-3 sm:px-5 sm:py-3.5 shadow-xs transition-all hover:border-[#22A39E]/50">
                 <div className="flex items-center justify-between gap-3 sm:gap-6 flex-nowrap min-w-0">
                   {/* Price Section */}
@@ -110,39 +133,72 @@ export const FunnelLandingPage: React.FC<FunnelLandingPageProps> = ({
                 </div>
               </div>
 
+              {/* Gallery */}
               <ProductGallery
                 images={product.images}
                 mainImage={product.image}
                 title={product.title}
               />
 
-              {/* Product Details Box including Title, Trust Badges, & Provider Description */}
-              <ProductDetailsBox
-                title={product.title}
-                description={product.description}
-                features={product.features}
-              />
-            </div>
+              {/* MOBILE ONLY: Title + Trust Badges right after the image */}
+              <div className="lg:hidden">
+                <ProductDetailsBox
+                  title={product.title}
+                  description={product.description}
+                  features={product.features}
+                  variant="header"
+                />
+              </div>
 
-            {/* Column 2: DIRECT 1-STEP ORDER FORM (Sticky on desktop) */}
-            <div id="order-form-container" className="lg:col-span-5 scroll-mt-4 mt-6 lg:mt-0 lg:sticky lg:top-4 min-w-0">
-              <div className="w-full min-w-0">
-                {/* Order Form Card */}
-                <OrderForm
-                  product={product}
-                  onOrderSuccess={onOrderSuccess}
+              {/* DESKTOP: Full Product Details Box (title + badges + description) */}
+              <div className="hidden lg:block">
+                <ProductDetailsBox
+                  title={product.title}
+                  description={product.description}
+                  features={product.features}
+                  variant="full"
                 />
               </div>
             </div>
 
+            {/* ORDER FORM — SINGLE instance in the DOM.
+                Mobile: flows in-place right after the main column (order-2).
+                Desktop: naturally lands in the remaining 5 columns of the
+                same row (auto-placement — no explicit lg:col-start needed,
+                since the main column above already claims columns 1–7,
+                leaving exactly 5 free columns for this item to fill).
+                lg:sticky keeps it pinned while the main column scrolls
+                past it, exactly like the original design. */}
+            <div
+              id="order-form-container"
+              className="order-2 lg:order-2 lg:col-span-5 lg:sticky lg:top-4 min-w-0"
+            >
+              <OrderForm
+                product={product}
+                onOrderSuccess={onOrderSuccess}
+              />
+            </div>
+
+            {/* MOBILE ONLY: Description body below the order form.
+                Desktop already shows the full description inside the
+                "full" ProductDetailsBox in the main column above, so this
+                stays lg:hidden to avoid rendering the description twice. */}
+            <div className="order-3 lg:hidden min-w-0">
+              <ProductDetailsBox
+                description={product.description}
+                features={product.features}
+                variant="body"
+              />
+            </div>
+
           </div>
 
-          {/* Section 3: 3-Steps Order Guide (Full Width Below Columns) */}
+          {/* Section 3: 3-Steps Order Guide (Full Width Below Grid) */}
           <div className="min-w-0">
             <FunnelSteps />
           </div>
 
-          {/* Section 4: FAQ Accordion (Full Width Below Columns) */}
+          {/* Section 4: FAQ Accordion (Full Width Below Grid) */}
           <div className="max-w-3xl mx-auto min-w-0">
             <div className="text-center mb-6 min-w-0">
               <h2 className="text-lg sm:text-2xl font-extrabold text-black break-words">
